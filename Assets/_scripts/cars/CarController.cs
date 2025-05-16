@@ -9,21 +9,24 @@ public class CarController : MonoBehaviour {
     private float currentSteerAngle, currentbreakForce;
     private bool isBreaking;
 
-    // Settings
+    // Ajustes globales
     [SerializeField] private float motorForce, breakForce, maxSteerAngle;
 
-    // Wheel Colliders
+    // Ruedas
     [SerializeField] private WheelCollider frontLeftWheelCollider, frontRightWheelCollider;
     [SerializeField] private WheelCollider rearLeftWheelCollider, rearRightWheelCollider;
-
-    // Wheels
     [SerializeField] private Transform frontLeftWheelTransform, frontRightWheelTransform;
     [SerializeField] private Transform rearLeftWheelTransform, rearRightWheelTransform;
 
     private float uiVerticalInput = 0.0f;
     private float uiHorizontalInput = 0.0f;
     private bool uiIsBraking = false;
+    private Rigidbody rb;
 
+    void Start() {
+        rb = GetComponent<Rigidbody>();
+        rb.centerOfMass = new Vector3(0, -0.5f, 0);
+    }
 
     private void FixedUpdate() {
         GetInput();
@@ -58,7 +61,13 @@ public class CarController : MonoBehaviour {
     }
 
     private void HandleSteering() {
-        currentSteerAngle = maxSteerAngle * horizontalInput;
+        float actualVelocity = rb.linearVelocity.magnitude;
+        float maxVelocity = 30f;
+        float steer = Mathf.Clamp01(1 - (actualVelocity / maxVelocity));
+
+        float steerAngle = maxSteerAngle * steer;
+        currentSteerAngle = steerAngle * horizontalInput;
+
         frontLeftWheelCollider.steerAngle = currentSteerAngle;
         frontRightWheelCollider.steerAngle = currentSteerAngle;
     }
