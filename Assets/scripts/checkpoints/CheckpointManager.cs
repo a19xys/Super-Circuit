@@ -112,7 +112,7 @@ public class CheckpointManager : MonoBehaviour {
     }
 
     private void ActualizarTextoVueltas() {
-        if (vueltasCompletadas >= vueltasParaGanar) { vueltasTexto.text = "GOAL!!"; }
+        if (vueltasCompletadas >= vueltasParaGanar) { vueltasTexto.text = "GOAL"; }
         else { vueltasTexto.text = $"{vueltasCompletadas + 1}/{vueltasParaGanar}"; }
     }
 

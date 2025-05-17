@@ -15,8 +15,7 @@ public class CarAudioController : MonoBehaviour {
 
     private bool estabaFrenando = false;
 
-    void Start()
-    {
+    void Start() {
         motorSource = gameObject.AddComponent<AudioSource>();
         motorSource.loop = true;
         motorSource.clip = engineClip;
@@ -30,13 +29,22 @@ public class CarAudioController : MonoBehaviour {
     }
 
     void Update() {
+        if (carController == null) { return; }
+
+        if (!carController.MotorActivo()) {
+            motorSource.pitch = 1.0f;
+            motorSource.volume = 0.3f;
+            estabaFrenando = false;
+            return;
+        }
+
         float vertical = Mathf.Abs(carController.GetVerticalInput());
         bool estaFrenando = carController.IsBraking();
 
         float targetPitch = Mathf.Lerp(1.0f, 2.0f, vertical);
         motorSource.pitch = Mathf.Lerp(motorSource.pitch, targetPitch, Time.deltaTime * 5f);
 
-        if (estaFrenando && !estabaFrenando && !sfxSource.isPlaying & motorSource.pitch > 1.1f) { sfxSource.PlayOneShot(brakeScreechClip); }
+        if (estaFrenando && !estabaFrenando && !sfxSource.isPlaying && motorSource.pitch > 1.05f) { sfxSource.PlayOneShot(brakeScreechClip); }
 
         estabaFrenando = estaFrenando;
     }
