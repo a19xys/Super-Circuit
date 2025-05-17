@@ -5,7 +5,9 @@ using System.Collections.Generic;
 public class CheckpointManager : MonoBehaviour {
 
     [Header("Checkpoints")]
-    public List<GameObject> checkpoints;
+    public List<GameObject> vuelta1;
+    public List<GameObject> vuelta2;
+    public List<GameObject> vuelta3;
 
     [Header("Vueltas")]
     public TextMeshProUGUI vueltasTexto;
@@ -16,28 +18,30 @@ public class CheckpointManager : MonoBehaviour {
     public Material materialSiguiente;
     public Material materialFinal;
 
-    private int checkpointActual = 0;
+    private List<List<GameObject>> recorridoPorVuelta;
     private int vueltasCompletadas = 0;
+    private int checkpointActual = 0;
     private bool carreraFinalizada = false;
 
     void Start() {
+        recorridoPorVuelta = new List<List<GameObject>> { vuelta1, vuelta2, vuelta3 };
         ActivarCheckpoints();
         ActualizarTextoVueltas();
     }
 
     public void CheckpointTocado(GameObject checkpoint) {
         if (carreraFinalizada) return;
-        if (checkpoint != checkpoints[checkpointActual]) return;
 
-        // Desactiva el checkpoint actual (verde)
+        List<GameObject> recorrido = recorridoPorVuelta[vueltasCompletadas];
+
+        if (checkpoint != recorrido[checkpointActual]) return;
+
         checkpoint.SetActive(false);
         checkpointActual++;
 
-        // Si se ha completado una vuelta
-        if (checkpointActual >= checkpoints.Count) {
+        if (checkpointActual >= recorrido.Count) {
             vueltasCompletadas++;
             checkpointActual = 0;
-
             ActualizarTextoVueltas();
 
             if (vueltasCompletadas >= vueltasParaGanar) {
@@ -51,28 +55,60 @@ public class CheckpointManager : MonoBehaviour {
     }
 
     private void ActivarCheckpoints() {
-        // Desactiva todos
-        foreach (var cp in checkpoints) cp.SetActive(false);
-
-        // Activa el actual como verde
-        if (checkpointActual < checkpoints.Count) {
-            var verde = checkpoints[checkpointActual];
-            verde.SetActive(true);
-            SetMaterial(verde, EsUltimoCheckpointFinal() ? materialFinal : materialActual);
+        foreach (var vuelta in recorridoPorVuelta) {
+            foreach (var cp in vuelta) {
+                if (cp != null) cp.SetActive(false);
+            }
         }
 
-        // Activa el siguiente como azul
-        int siguienteIndex = checkpointActual + 1;
-        if (siguienteIndex < checkpoints.Count && !EsUltimaVuelta()) {
-            var azul = checkpoints[siguienteIndex];
-            azul.SetActive(true);
-            SetMaterial(azul, materialSiguiente);
+        List<GameObject> recorrido = recorridoPorVuelta[vueltasCompletadas];
+
+        if (checkpointActual < recorrido.Count) {
+            GameObject actual = recorrido[checkpointActual];
+            actual.SetActive(true);
+
+            CheckpointEffect efecto = actual.GetComponent<CheckpointEffect>();
+            if (efecto != null) efecto.ResetVisual();
+
+            CheckpointTrigger trigger = actual.GetComponent<CheckpointTrigger>();
+            if (trigger != null) trigger.PrepararComoActual();
+
+            bool esUltimoCheckpointFinal = EsUltimaVuelta() && checkpointActual == recorrido.Count - 1;
+            SetMaterial(actual, esUltimoCheckpointFinal ? materialFinal : materialActual);
         }
+
+        if (!EsUltimoCheckpointFinal()) {
+            GameObject siguiente = ObtenerSiguienteCheckpoint();
+            if (siguiente != null) {
+                siguiente.SetActive(true);
+
+                var efecto = siguiente.GetComponent<CheckpointEffect>();
+                if (efecto != null) efecto.ResetVisual();
+
+                var trigger = siguiente.GetComponent<CheckpointTrigger>();
+                if (trigger != null) trigger.PrepararComoSiguiente();
+
+                SetMaterial(siguiente, materialSiguiente);
+            }
+        }
+
     }
 
     private void SetMaterial(GameObject obj, Material mat) {
         Renderer rend = obj.GetComponent<Renderer>();
-        if (rend != null) rend.material = mat;
+
+        if (rend != null) { rend.material = mat; }
+
+        ParticleSystem ps = obj.GetComponentInChildren<ParticleSystem>();
+        
+        if (ps != null) {
+            var main = ps.main;
+            main.startColor = mat.color;
+        }
+
+        var trigger = obj.GetComponent<CheckpointTrigger>();
+
+        if (trigger != null) { trigger.EstablecerColorBase(mat.color); }
     }
 
     private void ActualizarTextoVueltas() {
@@ -80,11 +116,36 @@ public class CheckpointManager : MonoBehaviour {
         else { vueltasTexto.text = $"{vueltasCompletadas + 1}/{vueltasParaGanar}"; }
     }
 
-    private bool EsUltimaVuelta() {
+    public bool EsUltimaVuelta() {
         return vueltasCompletadas == vueltasParaGanar - 1;
     }
 
     private bool EsUltimoCheckpointFinal() {
-        return EsUltimaVuelta() && checkpointActual == checkpoints.Count - 1;
+        if (!EsUltimaVuelta()) return false;
+        List<GameObject> recorrido = recorridoPorVuelta[vueltasCompletadas];
+        return checkpointActual == recorrido.Count - 1;
     }
+
+    private GameObject ObtenerSiguienteCheckpoint() {
+        List<GameObject> recorridoActual = recorridoPorVuelta[vueltasCompletadas];
+        int siguienteIndex = checkpointActual + 1;
+
+        if (siguienteIndex < recorridoActual.Count) { return recorridoActual[siguienteIndex]; }
+
+        int siguienteVuelta = vueltasCompletadas + 1;
+
+        if (siguienteVuelta < recorridoPorVuelta.Count) {
+            List<GameObject> siguienteRecorrido = recorridoPorVuelta[siguienteVuelta];
+            if (siguienteRecorrido.Count > 0) { return siguienteRecorrido[0]; }
+        }
+
+        return null;
+    }
+
+    public bool EsUltimoCheckpointDelRecorrido(GameObject checkpoint) {
+        if (!EsUltimaVuelta()) return false;
+        List<GameObject> recorrido = recorridoPorVuelta[vueltasCompletadas];
+        return checkpoint == recorrido[recorrido.Count - 1];
+    }
+
 }
