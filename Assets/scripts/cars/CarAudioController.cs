@@ -1,21 +1,24 @@
 using UnityEngine;
 
-[RequireComponent(typeof(AudioSource))]
-public class CarAudioController : MonoBehaviour {
+public class CarAudioController : MonoBehaviour
+{
 
-    [Header("Referencias")]
     public CarController carController;
 
     [Header("Clips")]
     public AudioClip engineClip;
     public AudioClip brakeScreechClip;
 
+    [Header("Sonido")]
+    public float minBrakeScreechSpeed = 3f;
+
     private AudioSource motorSource;
     private AudioSource sfxSource;
 
     private bool estabaFrenando = false;
 
-    void Start() {
+    void Start()
+    {
         motorSource = gameObject.AddComponent<AudioSource>();
         motorSource.loop = true;
         motorSource.clip = engineClip;
@@ -28,14 +31,25 @@ public class CarAudioController : MonoBehaviour {
         sfxSource.volume = 0.6f;
     }
 
-    void Update() {
-        if (carController == null) { return; }
+    void Update()
+    {
+        if (carController == null) return;
 
-        if (!carController.MotorActivo()) {
-            motorSource.pitch = 1.0f;
-            motorSource.volume = 0.3f;
+        Rigidbody rb = carController.GetComponent<Rigidbody>();
+        float speed = rb != null ? rb.linearVelocity.magnitude : 0f;
+
+        // MOTOR
+        if (!carController.MotorActivo())
+        {
+            if (motorSource.isPlaying)
+                motorSource.Stop();
             estabaFrenando = false;
             return;
+        }
+        else
+        {
+            if (!motorSource.isPlaying)
+                motorSource.Play();
         }
 
         float vertical = Mathf.Abs(carController.GetVerticalInput());
@@ -43,9 +57,17 @@ public class CarAudioController : MonoBehaviour {
 
         float targetPitch = Mathf.Lerp(1.0f, 2.0f, vertical);
         motorSource.pitch = Mathf.Lerp(motorSource.pitch, targetPitch, Time.deltaTime * 5f);
+        motorSource.volume = 0.7f;
 
-        if (estaFrenando && !estabaFrenando && !sfxSource.isPlaying && motorSource.pitch > 1.05f) { sfxSource.PlayOneShot(brakeScreechClip); }
+        // MOTOR
+        if (estaFrenando && !estabaFrenando && speed > minBrakeScreechSpeed && !sfxSource.isPlaying) { sfxSource.PlayOneShot(brakeScreechClip); }
 
         estabaFrenando = estaFrenando;
     }
+
+    public void SetCarController(CarController nuevoCar)
+    {
+        carController = nuevoCar;
+    }
+
 }

@@ -1,6 +1,6 @@
 using UnityEngine;
 
-public class FuelRefillTrigger : MonoBehaviour {
+public class RefillTrigger : MonoBehaviour {
 
     private void OnTriggerEnter(Collider other) {
         if (other.CompareTag("Player")) {

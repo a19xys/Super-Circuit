@@ -6,18 +6,22 @@ using UnityEngine;
 public class CarController : MonoBehaviour
 {
 
-    private float horizontalInput, verticalInput;
-    private float currentSteerAngle, currentbreakForce;
-    private bool isBreaking;
-
     // Ajustes globales
-    [SerializeField] private float motorForce, breakForce, maxSteerAngle;
+    [SerializeField] public float motorForce = 1000f;
+    [SerializeField] public float breakForce = 800f;
+    [SerializeField] public float maxSteerAngle = 35f;
+    [SerializeField] public float turboMultiplier = 1.5f;
 
     // Ruedas
     [SerializeField] private WheelCollider frontLeftWheelCollider, frontRightWheelCollider;
     [SerializeField] private WheelCollider rearLeftWheelCollider, rearRightWheelCollider;
     [SerializeField] private Transform frontLeftWheelTransform, frontRightWheelTransform;
     [SerializeField] private Transform rearLeftWheelTransform, rearRightWheelTransform;
+
+    private float horizontalInput, verticalInput;
+    private float currentSteerAngle, currentbreakForce;
+    private bool isBreaking;
+    private bool turboActivo = false;
 
     private float uiVerticalInput = 0.0f;
     private float uiHorizontalInput = 0.0f;
@@ -49,15 +53,27 @@ public class CarController : MonoBehaviour
     public void SetVerticalInput(float value) { uiVerticalInput = value; }
     public void SetHorizontalInput(float value) { uiHorizontalInput = value; }
     public void SetBrake(bool braking) { uiIsBraking = braking; }
+    public void SetTurbo(bool turbo) { turboActivo = turbo; }
 
     public float GetVerticalInput() { return uiVerticalInput; }
     public bool IsBraking() { return uiIsBraking; }
 
     private void HandleMotor()
     {
-        if (!motorHabilitado) { ApplyBreaking(); return; }
-        frontLeftWheelCollider.motorTorque = verticalInput * motorForce;
-        frontRightWheelCollider.motorTorque = verticalInput * motorForce;
+        float fuerza = motorForce;
+        if (turboActivo) fuerza *= turboMultiplier;
+
+        if (!motorHabilitado)
+        {
+            frontLeftWheelCollider.motorTorque = 0f;
+            frontRightWheelCollider.motorTorque = 0f;
+        }
+        else
+        {
+            frontLeftWheelCollider.motorTorque = verticalInput * fuerza;
+            frontRightWheelCollider.motorTorque = verticalInput * fuerza;
+        }
+
         currentbreakForce = isBreaking ? breakForce : 0f;
         ApplyBreaking();
     }

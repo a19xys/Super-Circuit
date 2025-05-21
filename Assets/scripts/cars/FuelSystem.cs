@@ -30,9 +30,11 @@ public class FuelSystem : MonoBehaviour
         UpdateFuelUI();
     }
 
-    void Update() {
+    void Update()
+    {
         // --- Repostaje ---
-        if (enZonaDeRecarga && currentFuel < maxFuel) {
+        if (enZonaDeRecarga && currentFuel < maxFuel)
+        {
             currentFuel += refillRate * Time.deltaTime;
             currentFuel = Mathf.Clamp(currentFuel, 0f, maxFuel);
             UpdateFuelUI();
@@ -43,6 +45,8 @@ public class FuelSystem : MonoBehaviour
                 carController.SetMotorActivo(true);
                 DesactivarAvisoSinGasolina();
             }
+            
+            return;
         }
 
         // --- Consumo de gasolina ---
@@ -110,6 +114,36 @@ public class FuelSystem : MonoBehaviour
             color.a = alpha;
             sinGasolinaTexto.color = color;
             yield return null;
+        }
+    }
+
+    public void ResetSinGasolinaTexto()
+    {
+        if (sinGasolinaTexto == null) return;
+
+        sinGasolinaTexto.gameObject.SetActive(false);
+
+        if (parpadeoCoroutine != null)
+        {
+            StopCoroutine(parpadeoCoroutine);
+            parpadeoCoroutine = null;
+        }
+        Color c = sinGasolinaTexto.color;
+        c.a = 1f;
+        sinGasolinaTexto.color = c;
+    }
+
+    void OnEnable()
+    {
+        if (isOutOfFuel && sinGasolinaTexto != null)
+        {
+            Color c = sinGasolinaTexto.color;
+            c.a = 1f;
+            sinGasolinaTexto.color = c;
+            sinGasolinaTexto.gameObject.SetActive(true);
+
+            if (parpadeoCoroutine != null) StopCoroutine(parpadeoCoroutine);
+            parpadeoCoroutine = StartCoroutine(ParpadeoTexto());
         }
     }
 
