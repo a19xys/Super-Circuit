@@ -11,6 +11,7 @@ public class CarController : MonoBehaviour
     [SerializeField] public float breakForce = 800f;
     [SerializeField] public float maxSteerAngle = 35f;
     [SerializeField] public float turboMultiplier = 1.5f;
+    [SerializeField] public float maxVelocity = 0.3f;
 
     // Ruedas
     [SerializeField] private WheelCollider frontLeftWheelCollider, frontRightWheelCollider;
@@ -32,7 +33,6 @@ public class CarController : MonoBehaviour
     void Start()
     {
         rb = GetComponent<Rigidbody>();
-        rb.centerOfMass = new Vector3(0, -0.5f, 0);
     }
 
     private void FixedUpdate()
@@ -89,7 +89,6 @@ public class CarController : MonoBehaviour
     private void HandleSteering()
     {
         float actualVelocity = rb.linearVelocity.magnitude;
-        float maxVelocity = 30f;
         float steer = Mathf.Clamp01(1 - (actualVelocity / maxVelocity));
 
         float steerAngle = maxSteerAngle * steer;
