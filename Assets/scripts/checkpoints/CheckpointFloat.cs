@@ -5,6 +5,7 @@ public class CheckpointFloat : MonoBehaviour {
     public float altura = 0.2f;
     public float velocidad = 2f;
     public float rotacionSpeed = 30f;
+    public Vector3 planoNormal = Vector3.up;
 
     private Vector3 posicionInicial;
 
@@ -13,7 +14,8 @@ public class CheckpointFloat : MonoBehaviour {
     }
 
     void Update() {
-        float nuevaY = Mathf.Sin(Time.time * velocidad) * altura;
-        transform.position = posicionInicial + new Vector3(0, nuevaY, 0);
+        float offset = Mathf.Sin(Time.time * velocidad) * altura;
+        transform.position = posicionInicial + (planoNormal.normalized * offset);
     }
+
 }

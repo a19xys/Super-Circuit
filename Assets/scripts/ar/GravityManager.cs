@@ -4,18 +4,15 @@ using Vuforia;
 [RequireComponent(typeof(Rigidbody))]
 public class GravityManager : MonoBehaviour
 {
-    [Header("Referencias")]
-    public Rigidbody carRB;
+    public Rigidbody car;
     private ObserverBehaviour observer;
-
-    [Header("Gravedad")]
     public float gravityMagnitude = 9.81f;
 
     private bool isTracked = false;
 
     void Awake()
     {
-        if (carRB == null) carRB = GetComponent<Rigidbody>();
+        if (car == null) car = GetComponent<Rigidbody>();
         observer = GetComponentInParent<ObserverBehaviour>();
         SetPhysicsState(false);
     }
@@ -42,12 +39,8 @@ public class GravityManager : MonoBehaviour
 
     void SetPhysicsState(bool enable)
     {
-        carRB.isKinematic = !enable;
-        carRB.useGravity = false;
-        if (!enable) {
-            carRB.linearVelocity = Vector3.zero;
-            carRB.angularVelocity = Vector3.zero;
-        }
+        car.isKinematic = !enable;
+        car.useGravity = false;
     }
 
     void FixedUpdate()
@@ -56,6 +49,6 @@ public class GravityManager : MonoBehaviour
 
         Vector3 customGravity = -observer.transform.up * gravityMagnitude;
 
-        carRB.AddForce(customGravity, ForceMode.Acceleration);
+        car.AddForce(customGravity, ForceMode.Acceleration);
     }
 }

@@ -1,0 +1,5 @@
+C:/Users/u/UnityProjects/Super Circuit/.utmp/RelWithDebInfo/41bf1t2v/arm64-v8a/CMakeFiles/edit_cache.dir
+C:/Users/u/UnityProjects/Super Circuit/.utmp/RelWithDebInfo/41bf1t2v/arm64-v8a/CMakeFiles/rebuild_cache.dir
+C:/Users/u/UnityProjects/Super Circuit/.utmp/RelWithDebInfo/41bf1t2v/arm64-v8a/GameActivity/CMakeFiles/game.dir
+C:/Users/u/UnityProjects/Super Circuit/.utmp/RelWithDebInfo/41bf1t2v/arm64-v8a/GameActivity/CMakeFiles/edit_cache.dir
+C:/Users/u/UnityProjects/Super Circuit/.utmp/RelWithDebInfo/41bf1t2v/arm64-v8a/GameActivity/CMakeFiles/rebuild_cache.dir
